@@ -4,12 +4,13 @@ const Quiz = require('./../models/quiz')
 const Questions = require('./../models/questions')
 const Game = require('./../models/Game')
 const User = require('./../models/users')
+const auth = require('../middleware/auth')
 
 router.get('/', (req, res) => {
     Quiz.find({}).then(quizzes => res.send(quizzes))
 })
 
-router.get('/:id', (req, res) => {
+router.get('/:id', auth, (req, res) => {
     Quiz.findById(req.params.id)
         .then(quiz => {
             let questions = quiz.questions, counter = 0
@@ -32,7 +33,7 @@ router.get('/:id', (req, res) => {
         })
 })
 
-router.post('/answer', (req, res) => {
+router.post('/answer', auth, (req, res) => {
     let quizId = req.body.quizId, questionId = req.body.questionId, answer = req.body.answer, userId = req.headers.token
     console.log(quizId, questionId, answer, userId)
     Questions.findById(questionId)

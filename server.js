@@ -5,7 +5,7 @@ const bodyParser = require('body-parser')
 const userRoutes = require('./routes/routes.user')
 const quizRoutes = require('./routes/routes.quiz')
 
-mongoose.connect('mongodb://localhost:27017/Quizziz', {useNewUrlParser: true}, () => console.log('DB Connected'));
+mongoose.connect('mongodb://utkarsh:123456a@ds157538.mlab.com:57538/quizziz', {useNewUrlParser: true}, () => console.log('DB Connected'));
 
 const app = express();
 
