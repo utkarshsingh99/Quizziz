@@ -6,7 +6,14 @@ const UserSchema = new mongoose.Schema({
     occupation: String,
     email: String,
     password: String,
-    username: String
+    username: String,
+    quizPlayed: [{
+        quizId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Quiz'
+        },
+        score: Number
+    }]
 })
 
 const User = mongoose.model('User', UserSchema)

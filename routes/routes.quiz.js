@@ -9,12 +9,6 @@ router.get('/', (req, res) => {
     Quiz.find({}).then(quizzes => res.send(quizzes))
 })
 
-router.get('/c', (req, res) => {
-    const quiz = new Questions({})
-
-    quiz.save().then(() => res.send('Done'))
-})
-
 router.get('/:id', (req, res) => {
     Quiz.findById(req.params.id)
         .then(quiz => {
@@ -38,20 +32,33 @@ router.get('/:id', (req, res) => {
         })
 })
 
-router.post('/quiz/answer', (req, res) => {
-    let quizId = req.body.quizId, questionId = req.body.questionId, answer = req.body.answer, userId = req.header.token
+router.post('/answer', (req, res) => {
+    let quizId = req.body.quizId, questionId = req.body.questionId, answer = req.body.answer, userId = req.headers.token
+    console.log(quizId, questionId, answer, userId)
     Questions.findById(questionId)
         .then(question => {
             if(question.correct == answer) {
                 User.findById(userId)
                     .then(user => {
-                        // If User has not played game, then:
-                        Game.findByIdAndUpdate(quizId, {$push: {leaderboard: {user: user.username, score: 1}}})
-                        // If User has started playing the game, then update the score
-                        // ...
+                        Game.findOneAndUpdate({ quiz: quizId, 'leaderboard.user': userId }, { $inc: { "leaderboard.$.score": 1 } })
+                            .then(game => {                 // Finding if the user already is in leaderboard of the game, to increment his score
+                                if(!game) {
+                                    Game.findOneAndUpdate({ quiz: quizId }, { $push: { leaderboard: { user: user.username, score: 1 } } })
+                                        .then(() => {       // If user is not present, a new entry into the game leaderboard
+                                            User.findByIdAndUpdate(userId, { $push: { quizPlayed: { quizId, score: 1 } } })
+                                                .then(() => {
+                                                    res.send(200)
+                                                })
+                                        })
+                                }
+                                User.findOneAndUpdate({ _id: userId, 'quizPlayed.quizId': quizId }, { $inc: { "quizPlayed.$.score": 1 } })
+                                    .then(() => res.send(200))
+                            })
                     })
             }
         })
 })
+
+var quizfinder = (quizId) => quizId
 
 module.exports = router
